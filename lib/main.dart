@@ -17,7 +17,7 @@ class MyApp extends StatefulWidget{
 class _MyAppState extends State<MyApp> {
 
   void openDatabase() async {
-    Database db = await DB.getDatabase.database;
+    await DB.getDatabase.database;
   }
 
   @override

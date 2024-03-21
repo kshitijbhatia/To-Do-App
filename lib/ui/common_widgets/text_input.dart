@@ -31,7 +31,7 @@ class _TextInputState extends State<TextInput> {
       ),
       child : TextFormField(
         controller: widget.controller,
-        key,
+        // key,   Use the key of Text Form Field
         onChanged: (value){
           widget.removeError();
         },

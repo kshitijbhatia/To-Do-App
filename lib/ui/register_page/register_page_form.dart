@@ -2,7 +2,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:todo_app/db/authentication.dart';
+import 'package:todo_app/db/db_user_controller.dart';
 import 'package:todo_app/models/app_theme_settings.dart';
 import 'package:todo_app/models/user.dart';
 import 'package:todo_app/ui/common_widgets/submit_button.dart';
@@ -54,19 +54,25 @@ class _RegisterPageFormState extends State<RegisterPageForm> {
       });
       return;
     }
-    if (confirmPassController.text == passwordController.text) {
-      Authentication auth = Authentication.getInstance;
-      var response = await auth.registerUser(
-          emailController.text,
-          usernameController.text,
-          passwordController.text,
-          DateTime.now().toString());
-      if (response['status'] == 'error') {
+    if (confirmPassController.text.trim() == passwordController.text.trim()) {
+      UserController auth = UserController.getInstance;
+      User user = User(
+        email: emailController.text,
+        password: passwordController.text,
+        username: usernameController.text,
+        createdAt: DateTime.now().toString(),
+      );
+
+      var response = await auth.registerUser(user);
+
+      if (response['status'] == 'failure') {
         setState(() {
           emailError = 'Email Already Exists!';
         });
+      }else if(response['status'] == 'error'){
+        // Error Logic
       } else if (response['status'] == 'success') {
-        User currentUser = response['msg'] as User;
+        User currentUser = response['data'];
         log('Success : ${currentUser.getUserName}');
         Navigator.push(
           context,
@@ -138,6 +144,7 @@ class _RegisterPageFormState extends State<RegisterPageForm> {
             },
           ),
           SubmitButton(
+            text: 'Login',
             onClicked: registerUser,
           )
         ],

@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:todo_app/models/app_theme_settings.dart';
 
 class SubmitButton extends StatelessWidget {
-  const SubmitButton({super.key, required this.onClicked});
+  const SubmitButton({super.key, required this.text,required this.onClicked});
 
-  final Function() onClicked; 
+  final Function() onClicked;
+  final String text;
 
   @override
   Widget build(BuildContext context) {
@@ -31,9 +32,9 @@ class SubmitButton extends StatelessWidget {
         onPressed: () {
           onClicked();
         },
-        child: const Text(
-          'Login',
-          style: TextStyle(fontFamily: 'Roboto', fontSize: 24),
+        child: Text(
+          text,
+          style: const TextStyle(fontFamily: 'Roboto', fontSize: 24),
         ),
       ),
     );

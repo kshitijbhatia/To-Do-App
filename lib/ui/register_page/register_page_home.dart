@@ -13,6 +13,7 @@ class RegisterPageHome extends StatefulWidget {
 }
 
 class _RegisterPageHomeState extends State<RegisterPageHome> {
+
   @override
   Widget build(BuildContext context) {
     AppThemeSettings appTheme = AppThemeSettings();
@@ -43,7 +44,7 @@ class _RegisterPageHomeState extends State<RegisterPageHome> {
                   ),
                 ),
                 const SizedBox(height: 20,),
-                const RegisterPageForm()
+                const RegisterPageForm(),
               ],
             ),
           ),

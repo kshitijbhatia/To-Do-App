@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:todo_app/db/database.dart';
-import 'package:todo_app/db/authentication.dart';
+import 'package:todo_app/db/db_user_controller.dart';
 import 'package:todo_app/models/app_theme_settings.dart';
 import 'package:todo_app/models/user.dart';
 import 'package:todo_app/ui/common_widgets/text_input.dart';
@@ -34,17 +34,18 @@ class _LoginPageFormState extends State<LoginPageForm> {
       return;
     }
 
-    Authentication auth = Authentication.getInstance;
-    var response = await auth.loginUser(emailController.text, passwordController.text);
+    UserController auth = UserController.getInstance;
+    var response = await auth.loginUser(emailController.text.trim(), passwordController.text.trim());
     if(response['status'] == 'failure'){
       setState(() {
-        emailError = response['msg'] == 'Incorrect Email' ? response['msg'] as String : null;
-        passError = response['msg'] == 'Incorrect Password' ? response['msg'] as String : null;
+        emailError = response['msg'] == 'Incorrect Email' ? response['msg'] : null;
+        passError = response['msg'] == 'Incorrect Password' ? response['msg'] : null;
       });
     }else if(response['status'] == 'error'){
+      log('Error Occurred while logging in');
       // Code for error in login
     }else if(response['status'] == 'success'){
-      User currentUser = response['msg'] as User;
+      User currentUser = response['data'];
       log('Success : ${currentUser.getUserName}');
       Navigator.push(
         context,

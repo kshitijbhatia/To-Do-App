@@ -23,11 +23,21 @@ class User {
 
   String get getCreatedAt => _createdAt;
 
-  factory User.fromJson(Map<String, Object?> json) {
+  factory User.fromJson(Map<String, dynamic> json) {
     return User(
-        email: json['email']!.toString(),
-        username: json['username']!.toString(),
-        password: json['password']!.toString(),
-        createdAt: json['createdAt']!.toString());
+        email: json['email'],
+        username: json['username'],
+        password: json['password'],
+        createdAt: json['createdAt']
+    );
+  }
+
+  Map<String, String> toJson(){
+    return {
+      "email" : _email,
+      "username" : _username,
+      "password" : _password,
+      "createdAt" : _createdAt
+    };
   }
 }
