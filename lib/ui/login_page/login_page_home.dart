@@ -1,6 +1,4 @@
 // ignore_for_file: sized_box_for_whitespace, avoid_unnecessary_containers
-import 'dart:developer';
-
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:todo_app/models/app_theme_settings.dart';
@@ -14,6 +12,10 @@ class LoginPage extends StatefulWidget {
 
   @override
   State<LoginPage> createState() => _LoginPageState();
+}
+
+extension on num{
+  SizedBox get height => SizedBox(height: toDouble(),);
 }
 
 class _LoginPageState extends State<LoginPage> {
@@ -40,17 +42,11 @@ class _LoginPageState extends State<LoginPage> {
             child: Column(
               children: [
                 const LoginPageHeader(),   
-                const SizedBox(
-                  height: 50,
-                ),
+                50.height,
                 const LoginPageImage(),    
-                const SizedBox(
-                  height: 30,
-                ),
+                30.height,
                 const LoginPageForm(),     
-                const SizedBox(
-                  height: 30,
-                ),
+                30.height,
                 Container(
                   child: RichText(
                     text: TextSpan(

@@ -1,6 +1,7 @@
 import 'dart:developer';
-import 'package:sqflite/sqflite.dart';
+
 import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:todo_app/models/task.dart';
 import 'package:todo_app/models/user.dart';
 
@@ -38,7 +39,7 @@ class DB {
 
   static const _createTaskTable = '''
         CREATE TABLE $task_table(
-          $task_columnId INTEGER PRIMARY KEY AUTOINCREMENT,
+          $task_columnId TEXT PRIMARY KEY,
           $task_columnTitle TEXT NOT NULL,
           $task_columnDescription TEXT NOT NULL,
           $task_columnEmail TEXT NOT NULL,
@@ -66,7 +67,7 @@ class DB {
         await db.execute(_createUserTable);
       },
       onUpgrade: (db, oldVersion, newVersion) async {
-        if(oldVersion == 1){
+        if (oldVersion == 1) {
           await db.execute(_createTaskTable);
         }
       },
@@ -78,30 +79,14 @@ class DB {
   Future<Map<String, dynamic>> registerUser(User user) async {
     try {
       int response = await _database!.insert(user_table, user.toJson());
-      return {
-        'status': 'success',
-        'msg': 'User Created Successfully',
-        'data': user
-      };
+      return {'status': 'success', 'msg': 'User Created Successfully', 'data': user};
     } on DatabaseException catch (err) {
       if (err.isUniqueConstraintError()) {
-        return {
-          'status': 'failure',
-          'msg': 'Primary Key Not Unique',
-          'data': err.toString()
-        };
+        return {'status': 'failure', 'msg': 'Primary Key Not Unique', 'data': err.toString()};
       }
-      return {
-        'status': 'error',
-        'msg': 'Database Exception',
-        'data': err.toString()
-      };
+      return {'status': 'error', 'msg': 'Error Occurred', 'data': err.toString()};
     } on Error catch (err) {
-      return {
-        'status': 'error',
-        'msg': 'Error Occurred',
-        'data': err.toString()
-      };
+      return {'status': 'error', 'msg': 'Error Occurred', 'data': err.toString()};
     }
   }
 
@@ -109,34 +94,73 @@ class DB {
 
   Future<Map<String, dynamic>> loginUser(String email, String password) async {
     try {
-      List<Map<String, dynamic>> response = await _database!.query(user_table, where: '$user_columnEmail = ?', whereArgs: ['$email']);
+      List<Map<String, dynamic>> response = await _database!.query(user_table, where: '$user_columnEmail = ?', whereArgs: [email]);
       if (response.isEmpty) {
-        return {'status': 'failure', 'msg': 'Incorrect Email', 'data': null};
+        return {'status': 'failure', 'msg': 'Incorrect Email'};
       }
-      if(password != response[0]['password']){
-          return {'status' : 'failure', 'msg' : 'Incorrect Password', 'data' : null};
+      if (password != response[0]['password']) {
+        return {'status': 'failure', 'msg': 'Incorrect Password'};
       }
-      return {'status' : 'success', 'msg' : 'User Successfully Logged In', 'data' : response[0]};
-    }
-    catch (err) {
-      return {
-        'status': 'error',
-        'msg': 'Error Occurred',
-        'data': err.toString()
-      };
+      return {'status': 'success', 'msg': 'User Successfully Logged In', 'data': response[0]};
+    } catch (err) {
+      return {'status': 'error', 'msg': 'Error Occurred', 'data': err.toString()};
     }
   }
 
   // Add Task
 
   Future<Map<String, dynamic>> addTask(Task task) async {
-    try{
+    try {
       final response = await _database!.insert(task_table, task.toJson());
-      log('$response');
-      return {};
-    }catch(err){
-      log(err.toString());
-      return {};
+      return {'status': 'success', 'msg': 'Task Created Successfully', 'data': task};
+    } catch (err) {
+      return {'status': 'error', 'msg': 'Error Occurred', 'data': err.toString()};
+    }
+  }
+
+  // Get All Tasks
+
+  Future<Map<String, dynamic>> getAllTasks(String email) async {
+    try {
+      List<Map<String, dynamic>> response = await _database!.query(task_table, where: '$task_columnEmail = ?', whereArgs: ['$email']);
+      if (response.isEmpty) {
+        return {'status': 'failure', 'msg': 'No Data Found', 'data': []};
+      }
+      return {'status': 'success', 'msg': 'Data Retrieved Successfully', 'data': response};
+    } catch (err) {
+      return {'status': 'error', 'msg': 'Error Occurred', 'data': err.toString()};
+    }
+  }
+
+  // Delete a Task
+
+  Future<Map<String, dynamic>> deleteTask(String id) async {
+    try {
+      final response = await _database!.delete(task_table, where: '$task_columnId = ?', whereArgs: [id]);
+      if (response == 0) {
+        return {'status': 'error', 'msg': 'No rows found with id $id'};
+      }
+      return {'status': 'success', 'msg': 'Row deleted Successfully'};
+    } catch (err) {
+      return {'status': 'error', 'msg': 'Error Occurred'};
+    }
+  }
+
+  // Update a Task
+
+  Future<Map<String, dynamic>> updateTask(Task task) async {
+    try {
+      final response = await _database!.update(task_table,
+          {task_columnTitle : task.getTitle, task_columnDescription : task.getDescription, task_columncreatedAt : task.getCreatedAt},
+          where: '$task_columnId = ?',
+          whereArgs: [task.getId]
+      );
+      if(response == 0){
+        return {'status' : 'failure', 'msg' : 'No Rows Updated', 'data' : null};
+      }
+      return {'status' : 'success', 'msg' : 'Row Updated Successfully', 'data' : task};
+    } catch (err) {
+      return {'status' : 'error', 'msg' : 'Error Occurred', 'data' : err.toString()};
     }
   }
 }

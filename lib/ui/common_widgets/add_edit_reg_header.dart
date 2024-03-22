@@ -1,12 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:todo_app/models/app_theme_settings.dart';
 
-class RegisterPageHeader extends StatelessWidget {
-  const RegisterPageHeader({super.key});
+class Header extends StatefulWidget {
+  const Header({super.key, required this.text});
+
+  final String text;
+
+  @override
+  State<Header> createState() => _HeaderState();
+}
+
+class _HeaderState extends State<Header> {
+
+  AppThemeSettings appTheme = AppThemeSettings();
 
   @override
   Widget build(BuildContext context) {
-    AppThemeSettings appTheme = AppThemeSettings();
     double width = ScreenSize.getWidth(context);
     double height = ScreenSize.getHeight(context);
 
@@ -27,7 +36,7 @@ class RegisterPageHeader extends StatelessWidget {
           Container(
             margin: EdgeInsets.only(left: width / 15),
             child: Text(
-              'Registration Page',
+              widget.text,
               style: appTheme.getHeaderTextTheme,
             ),
           )

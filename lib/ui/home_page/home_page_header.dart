@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:todo_app/models/app_theme_settings.dart';
-import 'package:todo_app/ui/home_page/home_page.dart';
 
 class HomePageHeader extends StatefulWidget {
   const HomePageHeader({super.key, required this.username});

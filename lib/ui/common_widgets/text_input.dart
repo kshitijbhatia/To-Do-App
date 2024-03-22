@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:todo_app/models/app_theme_settings.dart';
 
@@ -38,6 +36,7 @@ class _TextInputState extends State<TextInput> {
         decoration: InputDecoration(
           icon: Icon(widget.icon),
           iconColor: appTheme.getPrimaryColor,
+          //contentPadding: ,
           labelText: widget.text,
           labelStyle: const TextStyle(color: Color.fromRGBO(0,0,0,0.7), fontSize: 18),
           enabledBorder: InputBorder.none,

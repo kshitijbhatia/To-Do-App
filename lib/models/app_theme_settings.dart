@@ -32,6 +32,9 @@ class AppThemeSettings {
 }
 
 class ScreenSize {
+  // static double width;
+  // static double height;
+
   static double getHeight(BuildContext context) {
     return MediaQuery.of(context).size.height -
         MediaQuery.of(context).padding.top;

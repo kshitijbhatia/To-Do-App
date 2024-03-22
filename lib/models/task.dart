@@ -1,4 +1,5 @@
 class Task {
+  String _id;
   String _email;
   String _title;
   String _description;
@@ -6,14 +7,18 @@ class Task {
   String? _updatedAt;
 
   Task({
+      required String id,
       required String email,
       required String title,
       required String description,
       required String createdAt})
-      : _email = email,
+      : _id = id,
+        _email = email,
         _title = title,
         _description = description,
         _createdAt = createdAt;
+
+  String get getId => _id;
 
   String get getEmail => _email;
 
@@ -25,6 +30,7 @@ class Task {
 
   factory Task.fromJson(Map<String, dynamic> json) {
     return Task(
+      id: json['id'],
       email: json['email'],
       title: json['title'],
       description: json['description'],
@@ -34,6 +40,7 @@ class Task {
 
   Map<String, dynamic> toJson(){
     return {
+      "id" : _id,
       "email" : _email,
       "title" : _title,
       "description" : _description,

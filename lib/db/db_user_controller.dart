@@ -1,6 +1,3 @@
-import 'dart:developer';
-
-import 'package:sqflite/sqflite.dart';
 import 'package:todo_app/db/database.dart';
 import 'package:todo_app/models/user.dart';
 
@@ -26,7 +23,7 @@ class UserController{
       }
       return response;
     }catch(err){
-      return {'status' : 'error', 'msg' : 'Error Parsing Json', 'data' : null};
+      return {'status' : 'error', 'msg' : 'Error Parsing Json', 'data' : err.toString()};
     }
   }
 }

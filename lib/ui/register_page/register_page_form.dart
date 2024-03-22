@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:todo_app/db/db_user_controller.dart';
 import 'package:todo_app/models/app_theme_settings.dart';
 import 'package:todo_app/models/user.dart';
+import 'package:todo_app/ui/common_widgets/snack_bar.dart';
 import 'package:todo_app/ui/common_widgets/submit_button.dart';
 import 'package:todo_app/ui/common_widgets/text_input.dart';
 import 'package:todo_app/ui/home_page/home_page.dart';
@@ -70,10 +71,10 @@ class _RegisterPageFormState extends State<RegisterPageForm> {
           emailError = 'Email Already Exists!';
         });
       }else if(response['status'] == 'error'){
-        // Error Logic
+        log('${response['msg']} : ${response['data']}');
+        ScaffoldMessenger.of(context).showSnackBar(getCustomSnackBar('Error Occurred While Registering'));
       } else if (response['status'] == 'success') {
         User currentUser = response['data'];
-        log('Success : ${currentUser.getUserName}');
         Navigator.push(
           context,
           MaterialPageRoute(

@@ -1,11 +1,10 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:todo_app/db/database.dart';
 import 'package:todo_app/db/db_user_controller.dart';
 import 'package:todo_app/models/app_theme_settings.dart';
 import 'package:todo_app/models/user.dart';
+import 'package:todo_app/ui/common_widgets/snack_bar.dart';
 import 'package:todo_app/ui/common_widgets/text_input.dart';
 import 'package:todo_app/ui/home_page/home_page.dart';
 
@@ -14,6 +13,10 @@ class LoginPageForm extends StatefulWidget {
 
   @override
   State<LoginPageForm> createState() => _LoginPageFormState();
+}
+
+extension on num{
+  SizedBox get height => SizedBox(height: toDouble(),);
 }
 
 class _LoginPageFormState extends State<LoginPageForm> {
@@ -42,8 +45,8 @@ class _LoginPageFormState extends State<LoginPageForm> {
         passError = response['msg'] == 'Incorrect Password' ? response['msg'] : null;
       });
     }else if(response['status'] == 'error'){
-      log('Error Occurred while logging in');
-      // Code for error in login
+      log('${response['msg']} : ${response['data']}');
+      ScaffoldMessenger.of(context).showSnackBar(getCustomSnackBar('Error Occurred While Login'));
     }else if(response['status'] == 'success'){
       User currentUser = response['data'];
       log('Success : ${currentUser.getUserName}');
@@ -100,9 +103,7 @@ class _LoginPageFormState extends State<LoginPageForm> {
                   });
                 },
               ),
-              const SizedBox(
-                height: 20,
-              ),
+              20.height,
               Container(
                 margin: const EdgeInsets.symmetric(horizontal: 15),
                 child: Row(
@@ -128,7 +129,7 @@ class _LoginPageFormState extends State<LoginPageForm> {
           ),
         ),
         Transform.translate(
-          offset: Offset(0, -height/30),
+          offset: Offset(8, -height/30),
           child: GestureDetector(
             onTap: () {
               loginButtonClicked();

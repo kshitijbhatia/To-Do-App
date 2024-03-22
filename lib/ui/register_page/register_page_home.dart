@@ -2,14 +2,18 @@
 
 import 'package:flutter/material.dart';
 import 'package:todo_app/models/app_theme_settings.dart';
+import 'package:todo_app/ui/common_widgets/add_edit_reg_header.dart';
 import 'package:todo_app/ui/register_page/register_page_form.dart';
-import 'package:todo_app/ui/register_page/register_page_header.dart';
 
 class RegisterPageHome extends StatefulWidget {
   const RegisterPageHome({super.key});
 
   @override
   State<RegisterPageHome> createState() => _RegisterPageHomeState();
+}
+
+extension on num{
+  SizedBox get height => SizedBox(height: toDouble(),);
 }
 
 class _RegisterPageHomeState extends State<RegisterPageHome> {
@@ -29,10 +33,8 @@ class _RegisterPageHomeState extends State<RegisterPageHome> {
             decoration: appTheme.getBackgroundTheme,
             child: Column(
               children: [
-                const RegisterPageHeader(),
-                const SizedBox(
-                  height: 30,
-                ),
+                const Header(text: 'Registration Page'),
+                30.height,
                 Container(
                   child: const Text(
                     'Register',
@@ -43,7 +45,7 @@ class _RegisterPageHomeState extends State<RegisterPageHome> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 20,),
+                20.height,
                 const RegisterPageForm(),
               ],
             ),
