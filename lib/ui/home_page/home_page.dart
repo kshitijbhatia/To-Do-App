@@ -2,12 +2,11 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:todo_app/db/db_task_controller.dart';
-import 'package:todo_app/models/app_theme_settings.dart';
+import 'package:todo_app/app_theme_settings.dart';
 import 'package:todo_app/models/task.dart';
 import 'package:todo_app/models/user.dart';
 import 'package:todo_app/ui/add_page/add_home_page.dart';
 import 'package:todo_app/ui/common_widgets/snack_bar.dart';
-import 'package:todo_app/ui/home_page/home_page_header.dart';
 import 'package:todo_app/ui/home_page/home_page_tasks.dart';
 
 class HomePage extends StatefulWidget {
@@ -99,7 +98,7 @@ class _HomePageState extends State<HomePage> {
           decoration: appTheme.getBackgroundTheme,
           child: Column(
             children: [
-              HomePageHeader(
+              _HomePageHeader(
                 username: widget.currentUser.getUserName,
               ),
               HomePageTasks(
@@ -111,3 +110,42 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
+
+class _HomePageHeader extends StatefulWidget {
+  const _HomePageHeader({super.key, required this.username});
+
+  final String username;
+
+  @override
+  State<_HomePageHeader> createState() => _HomePageHeaderState();
+}
+
+class _HomePageHeaderState extends State<_HomePageHeader> {
+  AppThemeSettings appTheme = AppThemeSettings();
+
+  @override
+  Widget build(BuildContext context) {
+    double width = ScreenSize.getWidth(context);
+    double height = ScreenSize.getHeight(context);
+
+    return Container(
+      decoration: appTheme.getHeaderTheme,
+      height: height/10,
+      width: width,
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text('Welcome ${widget.username}', style: const TextStyle(color: Colors.white, fontFamily: 'Roboto', fontSize: 22),),
+          GestureDetector(
+            onTap: (){
+              Navigator.pop(context);
+            },
+            child: const Text('LOGOUT', style: TextStyle(color: Colors.white, fontFamily: 'Roboto', fontSize: 18)),
+          )
+        ],
+      ),
+    );
+  }
+}
+

@@ -1,5 +1,7 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
-import 'package:todo_app/models/app_theme_settings.dart';
+import 'package:todo_app/app_theme_settings.dart';
 
 class TextInput extends StatefulWidget {
   const TextInput({super.key, required this.text, required this.icon, required this.inputType, required this.controller, required this.error, required this.removeError});
@@ -28,6 +30,12 @@ class _TextInputState extends State<TextInput> {
         border: Border.all(color: const Color.fromRGBO(0,0,0, 1),),
       ),
       child : TextFormField(
+        onTapOutside: (event){
+          FocusScopeNode focusNode = FocusScope.of(context);
+          if(!focusNode.hasPrimaryFocus){
+            focusNode.unfocus();
+          }
+        },
         controller: widget.controller,
         // key,   Use the key of Text Form Field
         onChanged: (value){
@@ -36,7 +44,7 @@ class _TextInputState extends State<TextInput> {
         decoration: InputDecoration(
           icon: Icon(widget.icon),
           iconColor: appTheme.getPrimaryColor,
-          //contentPadding: ,
+          contentPadding: widget.error != null ? const EdgeInsets.only(bottom : 0) : const EdgeInsets.symmetric(vertical: 10),
           labelText: widget.text,
           labelStyle: const TextStyle(color: Color.fromRGBO(0,0,0,0.7), fontSize: 18),
           enabledBorder: InputBorder.none,

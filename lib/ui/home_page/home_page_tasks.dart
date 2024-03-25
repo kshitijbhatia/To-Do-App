@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:todo_app/models/app_theme_settings.dart';
+import 'package:todo_app/app_theme_settings.dart';
 import 'package:todo_app/models/task.dart';
 import 'package:todo_app/models/user.dart';
 import 'package:todo_app/ui/edit_page/edit_home_page.dart';

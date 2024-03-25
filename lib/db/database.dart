@@ -79,6 +79,9 @@ class DB {
   Future<Map<String, dynamic>> registerUser(User user) async {
     try {
       int response = await _database!.insert(user_table, user.toJson());
+      if(response == 0){
+        return {'status' : 'failure', 'msg' : 'Error received while inserting user'};
+      }
       return {'status': 'success', 'msg': 'User Created Successfully', 'data': user};
     } on DatabaseException catch (err) {
       if (err.isUniqueConstraintError()) {
@@ -112,6 +115,9 @@ class DB {
   Future<Map<String, dynamic>> addTask(Task task) async {
     try {
       final response = await _database!.insert(task_table, task.toJson());
+      if(response == 0){
+        return {'status' : 'failure', 'msg' : 'Error received while inserting task'};
+      }
       return {'status': 'success', 'msg': 'Task Created Successfully', 'data': task};
     } catch (err) {
       return {'status': 'error', 'msg': 'Error Occurred', 'data': err.toString()};

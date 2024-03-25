@@ -2,7 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:todo_app/db/db_user_controller.dart';
-import 'package:todo_app/models/app_theme_settings.dart';
+import 'package:todo_app/app_theme_settings.dart';
 import 'package:todo_app/models/user.dart';
 import 'package:todo_app/ui/common_widgets/snack_bar.dart';
 import 'package:todo_app/ui/common_widgets/text_input.dart';
@@ -13,10 +13,6 @@ class LoginPageForm extends StatefulWidget {
 
   @override
   State<LoginPageForm> createState() => _LoginPageFormState();
-}
-
-extension on num{
-  SizedBox get height => SizedBox(height: toDouble(),);
 }
 
 class _LoginPageFormState extends State<LoginPageForm> {

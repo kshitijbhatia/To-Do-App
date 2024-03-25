@@ -1,8 +1,7 @@
 import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:todo_app/db/db_task_controller.dart';
-import 'package:todo_app/models/app_theme_settings.dart';
+import 'package:todo_app/app_theme_settings.dart';
 import 'package:todo_app/models/task.dart';
 import 'package:todo_app/models/user.dart';
 import 'package:todo_app/ui/common_widgets/add_edit_reg_header.dart';

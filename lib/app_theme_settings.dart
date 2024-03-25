@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+extension getSizedBox on num{
+  SizedBox get height => SizedBox(height: toDouble(),);
+}
+
 class AppThemeSettings {
   static const Color _primaryColor = Color.fromRGBO(24, 56, 131, 1);
   static const BoxDecoration _backgroundTheme = BoxDecoration(
@@ -32,9 +36,6 @@ class AppThemeSettings {
 }
 
 class ScreenSize {
-  // static double width;
-  // static double height;
-
   static double getHeight(BuildContext context) {
     return MediaQuery.of(context).size.height -
         MediaQuery.of(context).padding.top;
