@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:todo_app/app_theme_settings.dart';
+import 'package:todo_app/constants.dart';
 
 class Header extends StatefulWidget {
   const Header({super.key, required this.text});
@@ -21,13 +21,13 @@ class _HeaderState extends State<Header> {
 
     return Container(
       width: width,
-      height: height / 10,
+      height: height / 14,
       decoration: appTheme.getHeaderTheme,
       child: Row(
         children: [
           IconButton(
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.pop(context, 'back');
             },
             icon: const Icon(Icons.arrow_back),
             color: Colors.white,

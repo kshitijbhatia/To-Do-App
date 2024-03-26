@@ -1,51 +1,80 @@
+import 'dart:convert';
 import 'dart:developer';
-
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:todo_app/db/db_user_controller.dart';
-import 'package:todo_app/app_theme_settings.dart';
+import 'package:todo_app/constants.dart';
 import 'package:todo_app/models/user.dart';
 import 'package:todo_app/ui/common_widgets/snack_bar.dart';
 import 'package:todo_app/ui/common_widgets/text_input.dart';
 import 'package:todo_app/ui/home_page/home_page.dart';
 
 class LoginPageForm extends StatefulWidget {
-  const LoginPageForm({super.key});
+  const LoginPageForm({super.key, required this.emailController, required this.passwordController, required this.formKey});
+
+  final TextEditingController emailController;
+  final TextEditingController passwordController;
+  final GlobalKey<FormState> formKey;
 
   @override
   State<LoginPageForm> createState() => _LoginPageFormState();
 }
 
 class _LoginPageFormState extends State<LoginPageForm> {
-  
-  TextEditingController emailController = TextEditingController();
-  TextEditingController passwordController = TextEditingController();
+  bool _rememberMe = false;
 
-  String? emailError;
-  String? passError;
+  String? _emailError;
+  String? _passError;
 
-  void loginButtonClicked() async{
+  String? _checkEmail(String email){
 
-    if(emailController.text == '' || passwordController.text == ''){
+    String validError = 'Please enter a valid Email';
+
+    List<String> emailList= email.split('@');
+
+    if(emailList.length == 1){
+      return validError;
+    }else if(emailList[0].isEmpty || emailList[1].isEmpty){
+      return validError;
+    }
+
+    emailList = emailList[1].split('.');
+    if(emailList.length == 1){
+      return validError;
+    }else if(emailList[0].isEmpty || emailList[1].isEmpty){
+      return validError;
+    }else if(emailList[1] != 'com'){
+      return validError;
+    }
+
+    return null;
+  }
+
+  void _loginButtonClicked() async{
+
+    if(_checkEmail(widget.emailController.text) != null){
       setState(() {
-        emailError = emailController.text == '' ? 'Enter a valid Email' : null;
-        passError = passwordController.text == '' ? 'Enter a valid password' : null;
+        _emailError = _checkEmail(widget.emailController.text);
       });
       return;
     }
-
     UserController auth = UserController.getInstance;
-    var response = await auth.loginUser(emailController.text.trim(), passwordController.text.trim());
+    var response = await auth.loginUser(widget.emailController.text.trim(), widget.passwordController.text.trim());
     if(response['status'] == 'failure'){
-      setState(() {
-        emailError = response['msg'] == 'Incorrect Email' ? response['msg'] : null;
-        passError = response['msg'] == 'Incorrect Password' ? response['msg'] : null;
-      });
+      ScaffoldMessenger.of(context).showSnackBar(getCustomSnackBar('Invalid Email or Password'));
     }else if(response['status'] == 'error'){
-      log('${response['msg']} : ${response['data']}');
       ScaffoldMessenger.of(context).showSnackBar(getCustomSnackBar('Error Occurred While Login'));
     }else if(response['status'] == 'success'){
       User currentUser = response['data'];
-      log('Success : ${currentUser.getUserName}');
+      setState(() {
+        widget.emailController.clear();
+        widget.passwordController.clear();
+      });
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String currentUserJson = jsonEncode(currentUser.toJson());
+      prefs.setString('user', currentUserJson);
+      prefs.setBool('remember', _rememberMe);
+
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -73,62 +102,75 @@ class _LoginPageFormState extends State<LoginPageForm> {
               Radius.circular(20),
             ),
           ),
-          child: Column(
-            children: [
-              TextInput(
-                text: 'Email',
-                icon: Icons.person,
-                inputType: TextInputType.emailAddress,
-                controller: emailController,
-                error: emailError,
-                removeError: (){
-                  setState(() {
-                    emailError = null;
-                  });
-                },
-              ),
-              TextInput(
-                text: 'Password',
-                icon: Icons.lock_outline,
-                inputType: TextInputType.visiblePassword,
-                controller: passwordController,
-                error: passError,
-                removeError: (){
-                  setState(() {
-                    passError = null;
-                  });
-                },
-              ),
-              20.height,
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 15),
-                child: Row(
-                  children: [
-                    Checkbox(
-                      value: false,
-                      onChanged: (value) {},
-                      side:
-                          BorderSide(color: appTheme.getPrimaryColor, width: 2),
-                    ),
-                    const Text(
-                      'Remember Me',
-                      style: TextStyle(
-                        fontFamily: 'Roboto',
-                        fontSize: 18,
-                        color: Color.fromRGBO(0, 0, 0, 0.5),
-                      ),
-                    )
-                  ],
+          child: Form(
+            key: widget.formKey,
+            child: Column(
+              children: [
+                TextInput(
+                  text: 'Email',
+                  icon: Icons.person,
+                  inputType: TextInputType.emailAddress,
+                  controller: widget.emailController,
+                  error: _emailError,
+                  removeError: (){
+                    setState(() {
+                      _emailError = null;
+                    });
+                  },
+                  isType: "email",
+                  maxLength: 40,
                 ),
-              ),
-            ],
-          ),
+                TextInput(
+                  text: 'Password',
+                  icon: Icons.lock_outline,
+                  inputType: TextInputType.visiblePassword,
+                  controller: widget.passwordController,
+                  error: _passError,
+                  removeError: (){
+                    setState(() {
+                      _passError = null;
+                    });
+                  },
+                  isType: "password",
+                  maxLength: 20,
+                ),
+                20.height,
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 15),
+                  child: Row(
+                    children: [
+                      Checkbox(
+                        fillColor: MaterialStatePropertyAll(appTheme.getPrimaryColor),
+                        value: _rememberMe,
+                        onChanged: (value) {
+                          setState(() {
+                            _rememberMe = !_rememberMe;
+                          });
+                        },
+                        side: BorderSide(color: appTheme.getPrimaryColor, width: 2),
+                      ),
+                      const Text(
+                        'Remember Me',
+                        style: TextStyle(
+                          fontFamily: 'Roboto',
+                          fontSize: 18,
+                          color: Color.fromRGBO(0, 0, 0, 0.5),
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          )
         ),
         Transform.translate(
-          offset: Offset(8, -height/30),
+          offset: Offset(0, -height/30),
           child: GestureDetector(
             onTap: () {
-              loginButtonClicked();
+              if(widget.formKey.currentState!.validate()){
+                _loginButtonClicked();
+              }
             },
             child : Container(
                 width: width / 2,

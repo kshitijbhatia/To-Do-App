@@ -17,6 +17,11 @@ class TaskController{
         List<Task> tasks = [];
         List<Map<String, dynamic>> resList = response['data'];
         tasks.addAll(resList.map((task) => Task.fromJson(task)).toList());
+        tasks.sort((a,b){
+          DateTime aDateTime = DateTime.parse(a.getCreatedAt);
+          DateTime bDateTime = DateTime.parse(b.getCreatedAt);
+          return bDateTime.millisecondsSinceEpoch.compareTo(aDateTime.millisecondsSinceEpoch);
+        });
         response['data'] = tasks;
       }
       return response;

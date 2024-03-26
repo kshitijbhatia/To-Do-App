@@ -1,9 +1,11 @@
 // ignore_for_file: sized_box_for_whitespace, avoid_unnecessary_containers
+import 'dart:developer';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:todo_app/app_theme_settings.dart';
+import 'package:todo_app/constants.dart';
 import 'package:todo_app/ui/login_page/login_page_form.dart';
-import 'package:todo_app/ui/register_page/register_page_home.dart';
+import 'package:todo_app/ui/register_page/register_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -13,11 +15,31 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passController = TextEditingController();
+
   @override
-  void initState(){
-    super.initState();
+  void dispose() {
+    super.dispose();
+    _emailController.dispose();
+    _passController.dispose();
   }
+
+  void _navigateToRegisterPage(){
+    setState(() {
+      formKey.currentState?.reset();
+      _emailController.clear();
+      _passController.clear();
+    });
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const RegisterPageHome(),
+      ),
+    );
+  }
+
+  final formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -39,9 +61,15 @@ class _LoginPageState extends State<LoginPage> {
                 50.height,
                 const _LoginPageImage(),
                 30.height,
-                const LoginPageForm(),     
+                LoginPageForm(
+                  emailController: _emailController,
+                  passwordController: _passController,
+                  formKey: formKey,
+                ),
                 30.height,
-                const _LoginToRegisterButton()
+                _LoginToRegisterButton(
+                  navigateToRegisterPage: _navigateToRegisterPage,
+                )
               ],
             ),
           ),
@@ -62,7 +90,7 @@ class _LoginPageHeader extends StatelessWidget {
     double height = ScreenSize.getHeight(context);
 
     return Container(
-      height: height / 10,
+      height: height / 14,
       width: width,
       decoration: appTheme.getHeaderTheme,
       padding: const EdgeInsets.only(left: 15),
@@ -104,9 +132,10 @@ class _LoginPageImage extends StatelessWidget {
   }
 }
 
-
 class _LoginToRegisterButton extends StatelessWidget{
-  const _LoginToRegisterButton({super.key});
+  const _LoginToRegisterButton({super.key, required this.navigateToRegisterPage});
+
+  final Function() navigateToRegisterPage;
 
   @override
   Widget build(BuildContext context) {
@@ -125,14 +154,7 @@ class _LoginToRegisterButton extends StatelessWidget{
                   decoration: TextDecoration.underline,
                   fontFamily: 'Roboto'),
               recognizer: TapGestureRecognizer()
-                ..onTap = () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const RegisterPageHome(),
-                    ),
-                  );
-                },
+                ..onTap = navigateToRegisterPage,
             )
           ],
         ),
@@ -140,3 +162,4 @@ class _LoginToRegisterButton extends StatelessWidget{
     );
   }
 }
+

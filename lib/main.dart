@@ -1,8 +1,12 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:todo_app/db/database.dart';
-import 'package:todo_app/ui/login_page/login_page_home.dart';
+import 'package:todo_app/models/user.dart';
+import 'package:todo_app/ui/home_page/home_page.dart';
+import 'package:todo_app/ui/login_page/login_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -17,20 +21,32 @@ class MyApp extends StatefulWidget{
 
 class _MyAppState extends State<MyApp> {
 
-  void openDatabase() async {
+  String _user = '';
+  bool _remember = false;
+
+  void _loadPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _user = prefs.getString('user') ?? '';
+      _remember = prefs.getBool('remember') ?? false;
+    });
+  }
+
+  void _openDatabase() async {
     await DB.getDatabase.database;
   }
 
   @override
   void initState() {
     super.initState();
-    openDatabase();
+    _openDatabase();
+    _loadPreferences();
   }
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: LoginPage(),
+    return MaterialApp(
+      home: (_user == '' || !_remember) ? const LoginPage() : HomePage(currentUser: User.fromJson(jsonDecode(_user))),
       debugShowCheckedModeBanner: false,
     );
   }

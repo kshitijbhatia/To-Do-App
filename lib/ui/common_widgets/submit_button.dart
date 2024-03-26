@@ -1,11 +1,14 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
-import 'package:todo_app/app_theme_settings.dart';
+import 'package:todo_app/constants.dart';
 
 class SubmitButton extends StatelessWidget {
-  const SubmitButton({super.key, required this.text,required this.onClicked});
+  const SubmitButton({super.key, required this.text,required this.onClicked, required this.formKey});
 
   final Function() onClicked;
   final String text;
+  final GlobalKey<FormState> formKey;
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +33,10 @@ class SubmitButton extends StatelessWidget {
           ),
         ),
         onPressed: () {
-          onClicked();
+          if(formKey.currentState!.validate()){
+            onClicked();
+            return;
+          }
         },
         child: Text(
           text,

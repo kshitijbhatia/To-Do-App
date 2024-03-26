@@ -1,5 +1,4 @@
 import 'dart:developer';
-
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:todo_app/models/task.dart';
@@ -128,7 +127,7 @@ class DB {
 
   Future<Map<String, dynamic>> getAllTasks(String email) async {
     try {
-      List<Map<String, dynamic>> response = await _database!.query(task_table, where: '$task_columnEmail = ?', whereArgs: ['$email']);
+      List<Map<String, dynamic>> response = await _database!.query(task_table, where: '$task_columnEmail = ?', whereArgs: [email]);
       if (response.isEmpty) {
         return {'status': 'failure', 'msg': 'No Data Found', 'data': []};
       }

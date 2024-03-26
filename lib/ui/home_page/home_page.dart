@@ -1,13 +1,15 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:todo_app/db/db_task_controller.dart';
-import 'package:todo_app/app_theme_settings.dart';
+import 'package:todo_app/constants.dart';
 import 'package:todo_app/models/task.dart';
 import 'package:todo_app/models/user.dart';
-import 'package:todo_app/ui/add_page/add_home_page.dart';
+import 'package:todo_app/ui/add_page/add_page.dart';
 import 'package:todo_app/ui/common_widgets/snack_bar.dart';
 import 'package:todo_app/ui/home_page/home_page_tasks.dart';
+import 'package:todo_app/ui/login_page/login_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key, required this.currentUser});
@@ -24,7 +26,6 @@ class _HomePageState extends State<HomePage> {
   List<Task> _tasksList = [];
 
   _getAllTasks() async {
-    log('Inside function');
     final response = await TaskController.getInstance
         .getAllTasks(widget.currentUser.getEmail);
     if (response['status'] == 'success') {
@@ -32,10 +33,7 @@ class _HomePageState extends State<HomePage> {
         _tasksList = response['data'];
       });
     } else if (response['status'] == 'error') {
-      log('${response['msg']} : ${response['data']}');
       ScaffoldMessenger.of(context).showSnackBar(getCustomSnackBar('Error Fetching Notes'));
-    } else if (response['status'] == 'failure') {
-      ScaffoldMessenger.of(context).showSnackBar(getCustomSnackBar('No Notes Found'));
     }
   }
 
@@ -48,10 +46,6 @@ class _HomePageState extends State<HomePage> {
       ScaffoldMessenger.of(context).showSnackBar(getCustomSnackBar('Item Deleted Successfully'));
     }else if(response['status'] == 'error'){
       ScaffoldMessenger.of(context).showSnackBar(getCustomSnackBar('Error Occurred while Deleting Note'));
-      setState(() {
-        _tasksList.removeWhere((task) => task.getId == taskToBeDeleted.getId);
-      });
-      // Fix - When error occurs, the user should see the deleted item again.
     }
   }
 
@@ -66,47 +60,53 @@ class _HomePageState extends State<HomePage> {
     double width = ScreenSize.getWidth(context);
     double height = ScreenSize.getHeight(context);
 
-    return SafeArea(
-      child: Scaffold(
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) =>
-                    AddPageHome(currentUser: widget.currentUser),
-              ),
-            ).then((response) {
-              if (response != null) {
-                setState(() {
-                  Task addedTask = response;
-                  _tasksList.add(addedTask);
+    return WillPopScope(
+        onWillPop: () {
+          return Future.value(false);
+        },
+        child : SafeArea(
+          child: Scaffold(
+            floatingActionButton: FloatingActionButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        AddPageHome(currentUser: widget.currentUser),
+                  ),
+                ).then((response) {
+                  if (response is! String) {
+                    setState(() {
+                      Task addedTask = response;
+                      _tasksList.insert(0, addedTask);
+                    });
+                    ScaffoldMessenger.of(context).showSnackBar(getCustomSnackBar('Note Added Successfully'));
+                  }
                 });
-              }
-            });
-          },
-          backgroundColor: appTheme.getPrimaryColor,
-          shape: const CircleBorder(),
-          child: const Icon(
-            Icons.add,
-            color: Colors.white,
-          ),
-        ),
-        body: Container(
-          width: width,
-          height: height,
-          decoration: appTheme.getBackgroundTheme,
-          child: Column(
-            children: [
-              _HomePageHeader(
-                username: widget.currentUser.getUserName,
+              },
+              backgroundColor: appTheme.getPrimaryColor,
+              shape: const CircleBorder(),
+              child: const Icon(
+                Icons.add,
+                color: Colors.white,
               ),
-              HomePageTasks(
-                  currentUser: widget.currentUser, tasksList: _tasksList, deleteTask : _deleteTask),
-            ],
+            ),
+            body: Container(
+              width: width,
+              height: height,
+              decoration: appTheme.getBackgroundTheme,
+              child: Column(
+                children: [
+                  _HomePageHeader(
+                    username: widget.currentUser.getUserName,
+                  ),
+                  HomePageTasks(
+                      currentUser: widget.currentUser, tasksList: _tasksList, deleteTask : _deleteTask),
+                ],
+              ),
+            ),
           ),
-        ),
-      ),
+        )
     );
   }
 }
@@ -130,7 +130,7 @@ class _HomePageHeaderState extends State<_HomePageHeader> {
 
     return Container(
       decoration: appTheme.getHeaderTheme,
-      height: height/10,
+      height: height/14,
       width: width,
       padding: const EdgeInsets.symmetric(horizontal: 10),
       child: Row(
@@ -138,8 +138,11 @@ class _HomePageHeaderState extends State<_HomePageHeader> {
         children: [
           Text('Welcome ${widget.username}', style: const TextStyle(color: Colors.white, fontFamily: 'Roboto', fontSize: 22),),
           GestureDetector(
-            onTap: (){
-              Navigator.pop(context);
+            onTap: () async {
+              SharedPreferences prefs = await SharedPreferences.getInstance();
+              prefs.setString('user', '');
+              prefs.setBool('remember', false);
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginPage(),));
             },
             child: const Text('LOGOUT', style: TextStyle(color: Colors.white, fontFamily: 'Roboto', fontSize: 18)),
           )

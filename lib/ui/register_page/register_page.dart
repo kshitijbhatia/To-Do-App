@@ -1,7 +1,7 @@
 // ignore_for_file: avoid_unnecessary_containers
 import 'package:flutter/material.dart';
-import 'package:todo_app/app_theme_settings.dart';
-import 'package:todo_app/ui/common_widgets/add_edit_reg_header.dart';
+import 'package:todo_app/constants.dart';
+import 'package:todo_app/ui/common_widgets/header.dart';
 import 'package:todo_app/ui/register_page/register_page_form.dart';
 
 class RegisterPageHome extends StatefulWidget {
