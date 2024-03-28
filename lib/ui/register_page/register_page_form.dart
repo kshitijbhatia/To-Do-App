@@ -1,6 +1,7 @@
 // ignore_for_file: sized_box_for_whitespace
-import 'dart:developer';
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:todo_app/db/db_user_controller.dart';
 import 'package:todo_app/constants.dart';
 import 'package:todo_app/models/user.dart';
@@ -45,35 +46,11 @@ class _RegisterPageFormState extends State<RegisterPageForm> {
     _confirmPassController.dispose();
   }
 
-  String? _checkEmail(String email){
-
-    String _validError = 'Please enter a valid Email';
-
-    List<String> emailList= email.split('@');
-
-    if(emailList.length == 1){
-      return _validError;
-    }else if(emailList[0].isEmpty || emailList[1].isEmpty){
-      return _validError;
-    }
-
-    emailList = emailList[1].split('.');
-    if(emailList.length == 1){
-      return _validError;
-    }else if(emailList[0].isEmpty || emailList[1].isEmpty){
-      return _validError;
-    }else if(emailList[1] != 'com'){
-      return _validError;
-    }
-
-    return null;
-  }
-
   void registerUser() async {
 
-    if(_checkEmail(_emailController.text)  != null){
+    if(checkEmail(_emailController.text)  != null){
       setState(() {
-        emailError = _checkEmail(_emailController.text);
+        emailError = checkEmail(_emailController.text);
       });
       return;
     }
@@ -96,19 +73,30 @@ class _RegisterPageFormState extends State<RegisterPageForm> {
       }else if(response['status'] == 'error'){
         ScaffoldMessenger.of(context).showSnackBar(getCustomSnackBar('Error Occurred While Registering'));
       } else if (response['status'] == 'success') {
+
+        // Storing the current user credentials in shared preferences
         User currentUser = response['data'];
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        String currentUserJson = jsonEncode(currentUser.toJson());
+        prefs.setString(Constants.user, currentUserJson);
+        prefs.setBool(Constants.rememberUser, false);
+
+        // Clearing all input fields
         setState(() {
           _emailController.clear();
           _passwordController.clear();
           _usernameController.clear();
           _confirmPassController.clear();
         });
+
+        // Navigating to Home Page
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => HomePage(currentUser: currentUser),
           ),
         );
+
       }
     } else {
       setState(() {
@@ -117,7 +105,7 @@ class _RegisterPageFormState extends State<RegisterPageForm> {
     }
   }
 
-  final formKey = GlobalKey<FormState>();
+  final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -125,7 +113,7 @@ class _RegisterPageFormState extends State<RegisterPageForm> {
     return Container(
       width: width,
       child: Form(
-        key: formKey,
+        key: _formKey,
         child: Column(
           children: [
             TextInput(
@@ -187,7 +175,7 @@ class _RegisterPageFormState extends State<RegisterPageForm> {
             SubmitButton(
               text: 'Login',
               onClicked: registerUser,
-              formKey: formKey,
+              formKey: _formKey,
             )
           ],
         ),

@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:todo_app/db/db_user_controller.dart';
@@ -21,43 +20,20 @@ class LoginPageForm extends StatefulWidget {
 }
 
 class _LoginPageFormState extends State<LoginPageForm> {
-  bool _rememberMe = false;
+  bool _rememberMe = true;
 
   String? _emailError;
   String? _passError;
 
-  String? _checkEmail(String email){
-
-    String validError = 'Please enter a valid Email';
-
-    List<String> emailList= email.split('@');
-
-    if(emailList.length == 1){
-      return validError;
-    }else if(emailList[0].isEmpty || emailList[1].isEmpty){
-      return validError;
-    }
-
-    emailList = emailList[1].split('.');
-    if(emailList.length == 1){
-      return validError;
-    }else if(emailList[0].isEmpty || emailList[1].isEmpty){
-      return validError;
-    }else if(emailList[1] != 'com'){
-      return validError;
-    }
-
-    return null;
-  }
-
   void _loginButtonClicked() async{
 
-    if(_checkEmail(widget.emailController.text) != null){
+    if(checkEmail(widget.emailController.text) != null){
       setState(() {
-        _emailError = _checkEmail(widget.emailController.text);
+        _emailError = checkEmail(widget.emailController.text);
       });
       return;
     }
+
     UserController auth = UserController.getInstance;
     var response = await auth.loginUser(widget.emailController.text.trim(), widget.passwordController.text.trim());
     if(response['status'] == 'failure'){
@@ -65,16 +41,21 @@ class _LoginPageFormState extends State<LoginPageForm> {
     }else if(response['status'] == 'error'){
       ScaffoldMessenger.of(context).showSnackBar(getCustomSnackBar('Error Occurred While Login'));
     }else if(response['status'] == 'success'){
+
+      // Storing the current user credentials in shared preferences
       User currentUser = response['data'];
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String currentUserJson = jsonEncode(currentUser.toJson());
+      prefs.setString(Constants.user, currentUserJson);
+      prefs.setBool(Constants.rememberUser, _rememberMe);
+
+      // Clearing all the input fields
       setState(() {
         widget.emailController.clear();
         widget.passwordController.clear();
       });
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String currentUserJson = jsonEncode(currentUser.toJson());
-      prefs.setString('user', currentUserJson);
-      prefs.setBool('remember', _rememberMe);
 
+      // Navigating to the Home Page
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -82,6 +63,7 @@ class _LoginPageFormState extends State<LoginPageForm> {
         ),
       );
     }
+
   }
 
   @override

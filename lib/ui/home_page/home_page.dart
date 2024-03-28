@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:todo_app/db/db_task_controller.dart';
@@ -26,12 +24,9 @@ class _HomePageState extends State<HomePage> {
   List<Task> _tasksList = [];
 
   _getAllTasks() async {
-    final response = await TaskController.getInstance
-        .getAllTasks(widget.currentUser.getEmail);
+    final response = await TaskController.getInstance.getAllTasks(widget.currentUser.getEmail);
     if (response['status'] == 'success') {
-      setState(() {
-        _tasksList = response['data'];
-      });
+      _tasksList = response['data'];
     } else if (response['status'] == 'error') {
       ScaffoldMessenger.of(context).showSnackBar(getCustomSnackBar('Error Fetching Notes'));
     }
@@ -49,11 +44,24 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _getAllTasks();
+  _navigateToAddPage() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) =>
+        const AddPageHome(),
+      ),
+    ).then((response) {
+      if (response is! String) {
+        setState(() {
+          Task addedTask = response;
+          _tasksList.insert(0, addedTask);
+        });
+        ScaffoldMessenger.of(context).showSnackBar(getCustomSnackBar('Note Added Successfully'));
+      }
+    });
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -67,22 +75,8 @@ class _HomePageState extends State<HomePage> {
         child : SafeArea(
           child: Scaffold(
             floatingActionButton: FloatingActionButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        AddPageHome(currentUser: widget.currentUser),
-                  ),
-                ).then((response) {
-                  if (response is! String) {
-                    setState(() {
-                      Task addedTask = response;
-                      _tasksList.insert(0, addedTask);
-                    });
-                    ScaffoldMessenger.of(context).showSnackBar(getCustomSnackBar('Note Added Successfully'));
-                  }
-                });
+              onPressed: () async {
+                await _navigateToAddPage();
               },
               backgroundColor: appTheme.getPrimaryColor,
               shape: const CircleBorder(),
@@ -100,8 +94,20 @@ class _HomePageState extends State<HomePage> {
                   _HomePageHeader(
                     username: widget.currentUser.getUserName,
                   ),
-                  HomePageTasks(
-                      currentUser: widget.currentUser, tasksList: _tasksList, deleteTask : _deleteTask),
+                  FutureBuilder<void>(
+                      future: _getAllTasks(), 
+                      builder: (context, snapshot) {
+                        if(snapshot.connectionState == ConnectionState.done){
+                          return HomePageTasks(
+                            tasksList: _tasksList,
+                            deleteTask : _deleteTask,
+                            navigateToAddPage: _navigateToAddPage,
+                          );
+                        }else{
+                          return Expanded(child: Center(child: CircularProgressIndicator(color: appTheme.getPrimaryColor,),));
+                        }
+                      },
+                  )
                 ],
               ),
             ),
@@ -140,8 +146,8 @@ class _HomePageHeaderState extends State<_HomePageHeader> {
           GestureDetector(
             onTap: () async {
               SharedPreferences prefs = await SharedPreferences.getInstance();
-              prefs.setString('user', '');
-              prefs.setBool('remember', false);
+              prefs.setString(Constants.user, '');
+              prefs.setBool(Constants.rememberUser, false);
               Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginPage(),));
             },
             child: const Text('LOGOUT', style: TextStyle(color: Colors.white, fontFamily: 'Roboto', fontSize: 18)),

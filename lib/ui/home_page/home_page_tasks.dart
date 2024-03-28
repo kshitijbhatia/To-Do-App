@@ -1,22 +1,21 @@
-import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:todo_app/constants.dart';
 import 'package:todo_app/models/task.dart';
-import 'package:todo_app/models/user.dart';
 import 'package:todo_app/ui/common_widgets/snack_bar.dart';
 import 'package:todo_app/ui/edit_page/edit_page.dart';
 
 class HomePageTasks extends StatefulWidget {
   const HomePageTasks(
       {super.key,
-      required this.currentUser,
       required this.tasksList,
-      required this.deleteTask});
+      required this.deleteTask,
+      required this.navigateToAddPage
+      });
 
-  final User currentUser;
   final List<Task> tasksList;
   final Function(Task) deleteTask;
+  final Function() navigateToAddPage;
 
   @override
   State<HomePageTasks> createState() => _HomePageTasksState();
@@ -71,15 +70,16 @@ class _HomePageTasksState extends State<HomePageTasks> {
 
     return Expanded(
       child: widget.tasksList.isEmpty
-          ? const Center(
-              child: Text(
-                'Click on the button below to add notes',
-                style: TextStyle(color: Colors.black, fontSize: 20),
+          ? GestureDetector(
+              onTap: () async {
+                await widget.navigateToAddPage();
+              },
+              child: const Center(
+                child: Text('Click here to add a new note', style: TextStyle(color: Colors.black, fontSize: 20),),
               ),
             )
           : ListView.builder(
               itemCount: widget.tasksList.length,
-
               itemBuilder: (context, index) {
                 Task task = widget.tasksList[index];
                 return Dismissible(
@@ -107,7 +107,6 @@ class _HomePageTasksState extends State<HomePageTasks> {
                         if (value is Task) {
                           Task updatedTask = value;
                           setState(() {
-                            log('hello');
                             widget.tasksList.removeWhere((t) => t.getId == updatedTask.getId);
                             widget.tasksList.insert(0, updatedTask);
                           });
@@ -164,3 +163,5 @@ class _HomePageTasksState extends State<HomePageTasks> {
     );
   }
 }
+
+

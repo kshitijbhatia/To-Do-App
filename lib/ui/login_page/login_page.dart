@@ -1,6 +1,4 @@
 // ignore_for_file: sized_box_for_whitespace, avoid_unnecessary_containers
-import 'dart:developer';
-
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:todo_app/constants.dart';
@@ -25,7 +23,7 @@ class _LoginPageState extends State<LoginPage> {
     _passController.dispose();
   }
 
-  void _navigateToRegisterPage(){
+  void _navigateToRegisterPage() {
     setState(() {
       formKey.currentState?.reset();
       _emailController.clear();
@@ -43,34 +41,38 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-
     AppThemeSettings appTheme = AppThemeSettings();
     double width = ScreenSize.getWidth(context);
     double height = ScreenSize.getHeight(context);
 
-    return SafeArea(
-      child: Scaffold(
-        body: SingleChildScrollView(
-          child: Container(
-            width: width,
-            height: height,
-            decoration: appTheme.getBackgroundTheme,
-            child: Column(
-              children: [
-                const _LoginPageHeader(),
-                50.height,
-                const _LoginPageImage(),
-                30.height,
-                LoginPageForm(
-                  emailController: _emailController,
-                  passwordController: _passController,
-                  formKey: formKey,
-                ),
-                30.height,
-                _LoginToRegisterButton(
-                  navigateToRegisterPage: _navigateToRegisterPage,
-                )
-              ],
+    return WillPopScope(
+      onWillPop: () {
+        return Future.value(false);
+      },
+      child: SafeArea(
+        child: Scaffold(
+          body: SingleChildScrollView(
+            child: Container(
+              width: width,
+              height: height,
+              decoration: appTheme.getBackgroundTheme,
+              child: Column(
+                children: [
+                  const _LoginPageHeader(),
+                  50.height,
+                  const _LoginPageImage(),
+                  30.height,
+                  LoginPageForm(
+                    emailController: _emailController,
+                    passwordController: _passController,
+                    formKey: formKey,
+                  ),
+                  30.height,
+                  _LoginToRegisterButton(
+                    navigateToRegisterPage: _navigateToRegisterPage,
+                  )
+                ],
+              ),
             ),
           ),
         ),
@@ -78,7 +80,6 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 }
-
 
 class _LoginPageHeader extends StatelessWidget {
   const _LoginPageHeader({super.key});
@@ -96,10 +97,7 @@ class _LoginPageHeader extends StatelessWidget {
       padding: const EdgeInsets.only(left: 15),
       child: Align(
         alignment: Alignment.centerLeft,
-        child: Text(
-            'Login Page',
-            style: appTheme.getHeaderTextTheme
-        ),
+        child: Text('Login Page', style: appTheme.getHeaderTextTheme),
       ),
     );
   }
@@ -115,7 +113,7 @@ class _LoginPageImage extends StatelessWidget {
 
     return Container(
       width: width,
-      height: height/7,
+      height: height / 7,
       margin: const EdgeInsets.symmetric(horizontal: 15),
       decoration: const BoxDecoration(
         color: Colors.white,
@@ -132,8 +130,9 @@ class _LoginPageImage extends StatelessWidget {
   }
 }
 
-class _LoginToRegisterButton extends StatelessWidget{
-  const _LoginToRegisterButton({super.key, required this.navigateToRegisterPage});
+class _LoginToRegisterButton extends StatelessWidget {
+  const _LoginToRegisterButton(
+      {super.key, required this.navigateToRegisterPage});
 
   final Function() navigateToRegisterPage;
 
@@ -162,4 +161,3 @@ class _LoginToRegisterButton extends StatelessWidget{
     );
   }
 }
-

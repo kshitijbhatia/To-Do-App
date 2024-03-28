@@ -1,5 +1,7 @@
-import 'dart:developer';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:todo_app/db/db_task_controller.dart';
 import 'package:todo_app/constants.dart';
 import 'package:todo_app/models/task.dart';
@@ -11,9 +13,7 @@ import 'package:todo_app/ui/common_widgets/text_input.dart';
 import 'package:uuid/uuid.dart';
 
 class AddPageHome extends StatefulWidget {
-  const AddPageHome({super.key, required this.currentUser});
-
-  final User currentUser;
+  const AddPageHome({super.key});
 
   @override
   State<AddPageHome> createState() => _AddPageHomeState();
@@ -35,11 +35,16 @@ class _AddPageHomeState extends State<AddPageHome> {
   }
 
   _addTask() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String userString = prefs.getString(Constants.user)!;
+    Map<String, dynamic> userJson = jsonDecode(userString);
+    User user = User.fromJson(userJson);
+
     var uuid = const Uuid();
 
     Task task = Task(
       id: uuid.v4(),
-      email: widget.currentUser.getEmail,
+      email: user.getEmail,
       title: _titleController.text.trim(),
       description: _descController.text.trim(),
       createdAt: DateTime.now().toString(),
@@ -56,7 +61,7 @@ class _AddPageHomeState extends State<AddPageHome> {
     }
   }
 
-  final formKey = GlobalKey<FormState>();
+  final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -70,7 +75,7 @@ class _AddPageHomeState extends State<AddPageHome> {
           height: height,
           decoration: appTheme.getBackgroundTheme,
           child: Form(
-            key: formKey,
+            key: _formKey,
             child: Column(
               children: [
                 const Header(text: 'Add Note'),
@@ -102,7 +107,7 @@ class _AddPageHomeState extends State<AddPageHome> {
                   isType: "description",
                   maxLength: 200,
                 ),
-                SubmitButton(text: 'SAVE', onClicked: _addTask, formKey: formKey,)
+                SubmitButton(text: 'SAVE', onClicked: _addTask, formKey: _formKey,)
               ],
             ),
           ),

@@ -12,37 +12,41 @@ class RegisterPageHome extends StatefulWidget {
 }
 
 class _RegisterPageHomeState extends State<RegisterPageHome> {
-
   @override
   Widget build(BuildContext context) {
     AppThemeSettings appTheme = AppThemeSettings();
     double width = ScreenSize.getWidth(context);
     double height = ScreenSize.getHeight(context);
 
-    return SafeArea(
-      child: Scaffold(
-        body: SingleChildScrollView(
-          child: Container(
-            width: width,
-            height: height,
-            decoration: appTheme.getBackgroundTheme,
-            child: Column(
-              children: [
-                const Header(text: 'Registration Page'),
-                30.height,
-                Container(
-                  child: const Text(
-                    'Register',
-                    style: TextStyle(
-                      fontFamily: 'Roboto',
-                      fontSize: 45,
-                      color: Colors.white,
+    return WillPopScope(
+      onWillPop: () {
+        return Future.value(false);
+      },
+      child: SafeArea(
+        child: Scaffold(
+          body: SingleChildScrollView(
+            child: Container(
+              width: width,
+              height: height,
+              decoration: appTheme.getBackgroundTheme,
+              child: Column(
+                children: [
+                  const Header(text: 'Registration Page'),
+                  30.height,
+                  Container(
+                    child: const Text(
+                      'Register',
+                      style: TextStyle(
+                        fontFamily: 'Roboto',
+                        fontSize: 45,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
-                ),
-                20.height,
-                const RegisterPageForm(),
-              ],
+                  20.height,
+                  const RegisterPageForm(),
+                ],
+              ),
             ),
           ),
         ),

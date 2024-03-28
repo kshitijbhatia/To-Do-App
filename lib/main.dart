@@ -20,7 +20,6 @@ class MyApp extends StatefulWidget{
 }
 
 class _MyAppState extends State<MyApp> {
-
   String _user = '';
   bool _remember = false;
 
@@ -30,9 +29,10 @@ class _MyAppState extends State<MyApp> {
       _user = prefs.getString('user') ?? '';
       _remember = prefs.getBool('remember') ?? false;
     });
+    log('$_user $_remember');
   }
 
-  void _openDatabase() async {
+  Future<void> _openDatabase() async {
     await DB.getDatabase.database;
   }
 
@@ -46,7 +46,20 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: (_user == '' || !_remember) ? const LoginPage() : HomePage(currentUser: User.fromJson(jsonDecode(_user))),
+      home: (_user == '' || !_remember)
+          ? const LoginPage()
+          : FutureBuilder<void>(
+              future: _openDatabase(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.done) {
+                  return HomePage(
+                    currentUser: User.fromJson(jsonDecode(_user)),
+                  );
+                } else{
+                  return const CircularProgressIndicator();
+                }
+              },
+            ),
       debugShowCheckedModeBanner: false,
     );
   }
