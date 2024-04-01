@@ -10,12 +10,14 @@ class HomePageTasks extends StatefulWidget {
       {super.key,
       required this.tasksList,
       required this.deleteTask,
-      required this.navigateToAddPage
+      required this.navigateToAddPage,
+      required this.navigateToEditPage
       });
 
   final List<Task> tasksList;
   final Function(Task) deleteTask;
   final Function() navigateToAddPage;
+  final Function(Task) navigateToEditPage;
 
   @override
   State<HomePageTasks> createState() => _HomePageTasksState();
@@ -96,24 +98,7 @@ class _HomePageTasksState extends State<HomePageTasks> {
                   key: UniqueKey(),
                   child: GestureDetector(
                     onTap: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => EditHomePage(
-                              currentTask: task,
-                              tasksList: widget.tasksList,
-                            ),
-                          )).then((value) {
-                        if (value is Task) {
-                          Task updatedTask = value;
-                          setState(() {
-                            widget.tasksList.removeWhere((t) => t.getId == updatedTask.getId);
-                            widget.tasksList.insert(0, updatedTask);
-                          });
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              getCustomSnackBar('Note Updated Successfully'));
-                        }
-                      });
+                      widget.navigateToEditPage(task);
                     },
                     child: Container(
                       width: width,

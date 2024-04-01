@@ -64,11 +64,7 @@ class DB {
       version: _databaseVersion,
       onCreate: (db, version) async {
         await db.execute(_createUserTable);
-      },
-      onUpgrade: (db, oldVersion, newVersion) async {
-        if (oldVersion == 1) {
-          await db.execute(_createTaskTable);
-        }
+        await db.execute(_createTaskTable);
       },
     );
   }

@@ -10,8 +10,7 @@ import 'package:todo_app/ui/common_widgets/submit_button.dart';
 import 'package:todo_app/ui/common_widgets/text_input.dart';
 
 class EditHomePage extends StatefulWidget {
-  const EditHomePage(
-      {super.key, required this.currentTask, required this.tasksList});
+  const EditHomePage({super.key, required this.currentTask, required this.tasksList});
 
   final Task currentTask;
   final List<Task> tasksList;
@@ -48,10 +47,6 @@ class _EditHomePageState extends State<EditHomePage> {
     final response = await TaskController.getInstance.updateTask(updatedTask);
 
     if(response['status'] == 'success'){
-      setState(() {
-        widget.tasksList.removeWhere((task) => task.getId == widget.currentTask.getId);
-        widget.tasksList.insert(0, updatedTask);
-      });
       Navigator.pop(context, updatedTask);
     }else if(response['status'] == 'error'){
       ScaffoldMessenger.of(context).showSnackBar(getCustomSnackBar('Cannot Update Note'));

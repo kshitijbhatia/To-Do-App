@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:todo_app/db/db_task_controller.dart';
@@ -6,6 +8,7 @@ import 'package:todo_app/models/task.dart';
 import 'package:todo_app/models/user.dart';
 import 'package:todo_app/ui/add_page/add_page.dart';
 import 'package:todo_app/ui/common_widgets/snack_bar.dart';
+import 'package:todo_app/ui/edit_page/edit_page.dart';
 import 'package:todo_app/ui/home_page/home_page_tasks.dart';
 import 'package:todo_app/ui/login_page/login_page.dart';
 
@@ -28,6 +31,7 @@ class _HomePageState extends State<HomePage> {
     if (response['status'] == 'success') {
       _tasksList = response['data'];
     } else if (response['status'] == 'error') {
+      log(response['data']);
       ScaffoldMessenger.of(context).showSnackBar(getCustomSnackBar('Error Fetching Notes'));
     }
   }
@@ -58,6 +62,22 @@ class _HomePageState extends State<HomePage> {
           _tasksList.insert(0, addedTask);
         });
         ScaffoldMessenger.of(context).showSnackBar(getCustomSnackBar('Note Added Successfully'));
+      }
+    });
+  }
+
+  _navigateToEditPage(Task currentTask) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => EditHomePage(currentTask: currentTask, tasksList: _tasksList),
+      )
+    ).then((value){
+      if(value is Task){
+        Task updatedTask = value;
+        setState(() {
+          _tasksList.removeWhere((task) => task.getId == currentTask.getId);
+          _tasksList.insert(0, updatedTask);
+        });
       }
     });
   }
@@ -102,6 +122,7 @@ class _HomePageState extends State<HomePage> {
                             tasksList: _tasksList,
                             deleteTask : _deleteTask,
                             navigateToAddPage: _navigateToAddPage,
+                            navigateToEditPage: _navigateToEditPage,
                           );
                         }else{
                           return Expanded(child: Center(child: CircularProgressIndicator(color: appTheme.getPrimaryColor,),));
