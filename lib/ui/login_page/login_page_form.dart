@@ -1,14 +1,19 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:todo_app/db/db_user_controller.dart';
 import 'package:todo_app/constants.dart';
+import 'package:todo_app/main.dart';
+import 'package:todo_app/models/form_data.dart';
 import 'package:todo_app/models/user.dart';
 import 'package:todo_app/ui/common_widgets/snack_bar.dart';
 import 'package:todo_app/ui/common_widgets/text_input.dart';
 import 'package:todo_app/ui/home_page/home_page.dart';
+import 'package:todo_app/ui/login_page/login_states.dart';
 
-class LoginPageForm extends StatefulWidget {
+class LoginPageForm extends ConsumerStatefulWidget {
   const LoginPageForm({super.key, required this.emailController, required this.passwordController, required this.formKey});
 
   final TextEditingController emailController;
@@ -16,25 +21,19 @@ class LoginPageForm extends StatefulWidget {
   final GlobalKey<FormState> formKey;
 
   @override
-  State<LoginPageForm> createState() => _LoginPageFormState();
+  ConsumerState<LoginPageForm> createState() => _LoginPageFormState();
 }
 
-class _LoginPageFormState extends State<LoginPageForm> {
-  bool _rememberMe = true;
-
-  String? _emailError;
-  String? _passError;
+class _LoginPageFormState extends ConsumerState<LoginPageForm> {
 
   void _loginButtonClicked() async{
-
-    if(checkEmail(widget.emailController.text) != null){
-      setState(() {
-        _emailError = checkEmail(widget.emailController.text);
-      });
+    final String? checkEmailError = checkEmail(widget.emailController.text);
+    if(checkEmailError != null){
+      ref.read(emailStateNotifierProvider.notifier).updateError(checkEmailError);
       return;
     }
 
-    UserController auth = UserController.getInstance;
+    UserController auth = ref.read(userControllerProvider);
     var response = await auth.loginUser(widget.emailController.text.trim(), widget.passwordController.text.trim());
     if(response['status'] == 'failure'){
       ScaffoldMessenger.of(context).showSnackBar(getCustomSnackBar('Invalid Email or Password'));
@@ -44,26 +43,15 @@ class _LoginPageFormState extends State<LoginPageForm> {
 
       // Storing the current user credentials in shared preferences
       User currentUser = response['data'];
-      SharedPreferences prefs = await SharedPreferences.getInstance();
+      SharedPreferences prefs = ref.read(sharedPreferencesProvider);
       String currentUserJson = jsonEncode(currentUser.toJson());
       prefs.setString(Constants.user, currentUserJson);
-      prefs.setBool(Constants.rememberUser, _rememberMe);
-
-      // Clearing all the input fields
-      setState(() {
-        widget.emailController.clear();
-        widget.passwordController.clear();
-      });
+      prefs.setBool(Constants.rememberUser, ref.read(rememberButtonStateProvider));
+      ref.read(userStateNotifierProvider.notifier).setUser(currentUser);
 
       // Navigating to the Home Page
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => HomePage(currentUser: currentUser),
-        ),
-      );
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomePage(),),);
     }
-
   }
 
   @override
@@ -71,6 +59,12 @@ class _LoginPageFormState extends State<LoginPageForm> {
     double width = ScreenSize.getWidth(context);
     double height = ScreenSize.getHeight(context);
     AppThemeSettings appTheme = AppThemeSettings();
+
+    bool _rememberMe = ref.watch(rememberButtonStateProvider);
+    final emailField = ref.watch(emailStateNotifierProvider);
+    final passwordField = ref.watch(passwordStateNotifierProvider);
+
+    log('Rebuilt');
 
     return Container(
       width: width,
@@ -93,12 +87,8 @@ class _LoginPageFormState extends State<LoginPageForm> {
                   icon: Icons.person,
                   inputType: TextInputType.emailAddress,
                   controller: widget.emailController,
-                  error: _emailError,
-                  removeError: (){
-                    setState(() {
-                      _emailError = null;
-                    });
-                  },
+                  error: emailField.error,
+                  removeError: () => ref.read(emailStateNotifierProvider.notifier).validate(widget.emailController.text),
                   isType: "email",
                   maxLength: 40,
                 ),
@@ -107,12 +97,8 @@ class _LoginPageFormState extends State<LoginPageForm> {
                   icon: Icons.lock_outline,
                   inputType: TextInputType.visiblePassword,
                   controller: widget.passwordController,
-                  error: _passError,
-                  removeError: (){
-                    setState(() {
-                      _passError = null;
-                    });
-                  },
+                  error: passwordField.error,
+                  removeError: () => ref.read(passwordStateNotifierProvider.notifier).validate(widget.emailController.text),
                   isType: "password",
                   maxLength: 20,
                 ),
@@ -124,11 +110,7 @@ class _LoginPageFormState extends State<LoginPageForm> {
                       Checkbox(
                         fillColor: MaterialStatePropertyAll(appTheme.getPrimaryColor),
                         value: _rememberMe,
-                        onChanged: (value) {
-                          setState(() {
-                            _rememberMe = !_rememberMe;
-                          });
-                        },
+                        onChanged: (value) => ref.read(rememberButtonStateProvider.notifier).state = !_rememberMe,
                         side: BorderSide(color: appTheme.getPrimaryColor, width: 2),
                       ),
                       const Text(
@@ -149,8 +131,11 @@ class _LoginPageFormState extends State<LoginPageForm> {
         Transform.translate(
           offset: Offset(0, -height/30),
           child: GestureDetector(
-            onTap: () {
-              if(widget.formKey.currentState!.validate()){
+            onTap: (){
+              final emailFieldError = ref.read(emailStateNotifierProvider.notifier).validate(widget.emailController.text);
+              final passwordFieldError = ref.read(passwordStateNotifierProvider.notifier).validate(widget.passwordController.text);
+
+              if(!emailFieldError && !passwordFieldError){
                 _loginButtonClicked();
               }
             },

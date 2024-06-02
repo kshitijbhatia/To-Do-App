@@ -1,8 +1,13 @@
 import 'dart:developer';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:todo_app/models/task.dart';
 import 'package:todo_app/models/user.dart';
+
+final databaseProvider = Provider<DB>((ref) {
+  return DB.getDatabase;
+},);
 
 class DB {
   DB._privateConstructor();
@@ -124,9 +129,6 @@ class DB {
   Future<Map<String, dynamic>> getAllTasks(String email) async {
     try {
       List<Map<String, dynamic>> response = await _database!.query(task_table, where: '$task_columnEmail = ?', whereArgs: [email]);
-      if (response.isEmpty) {
-        return {'status': 'failure', 'msg': 'No Data Found', 'data': []};
-      }
       return {'status': 'success', 'msg': 'Data Retrieved Successfully', 'data': response};
     } catch (err) {
       return {'status': 'error', 'msg': 'Error Occurred', 'data': err.toString()};

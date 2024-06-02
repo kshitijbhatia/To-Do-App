@@ -1,9 +1,14 @@
+import 'dart:developer';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_app/db/database.dart';
 import 'package:todo_app/models/task.dart';
 
+final taskProvider = Provider((ref) {
+  return TaskController.getInstance;
+},);
+
 class TaskController{
   TaskController._privateConstructor();
-
   static final TaskController _instance = TaskController._privateConstructor();
 
   static TaskController get getInstance => _instance;

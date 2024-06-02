@@ -1,5 +1,10 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_app/db/database.dart';
 import 'package:todo_app/models/user.dart';
+
+final userControllerProvider = Provider((ref) {
+  return UserController.getInstance;
+},);
 
 class UserController{
   UserController._privateConstructor();

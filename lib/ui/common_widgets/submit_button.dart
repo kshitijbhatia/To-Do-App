@@ -32,12 +32,7 @@ class SubmitButton extends StatelessWidget {
             ),
           ),
         ),
-        onPressed: () {
-          if(formKey.currentState!.validate()){
-            onClicked();
-            return;
-          }
-        },
+        onPressed: () => onClicked(),
         child: Text(
           text,
           style: const TextStyle(fontFamily: 'Roboto', fontSize: 24),

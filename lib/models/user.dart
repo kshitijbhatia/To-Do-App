@@ -1,27 +1,26 @@
-class User {
-  final String _username;
-  final String _email;
-  final String _password;
-  final String _createdAt;
-  final String? _updatedAt;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-  User(
-      {required String username,
-      required String email,
-      required String password,
-      required String createdAt,
-      String? updatedAt})
-      : _username = username,
-        _email = email,
-        _password = password,
-        _createdAt = createdAt,
-        _updatedAt = updatedAt;
+class User{
+  final String username;
+  final String email;
+  final String password;
+  final String createdAt;
+  final String? updatedAt;
 
-  String get getEmail => _email;
+  User({
+    required this.username,
+    required this.email,
+    required this.password,
+    required this.createdAt,
+    this.updatedAt
+  });
 
-  String get getUserName => _username;
 
-  String get getCreatedAt => _createdAt;
+  String get getEmail => email;
+
+  String get getUserName => username;
+
+  String get getCreatedAt => createdAt;
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
@@ -34,10 +33,28 @@ class User {
 
   Map<String, String> toJson(){
     return {
-      "email" : _email,
-      "username" : _username,
-      "password" : _password,
-      "createdAt" : _createdAt
+      "email" : email,
+      "username" : username,
+      "password" : password,
+      "createdAt" : createdAt
     };
   }
 }
+
+class UserNotifier extends StateNotifier<User>{
+  UserNotifier(User initialUser) : super(initialUser);
+
+  setUser(User user){
+    state = user;
+  }
+}
+
+final userStateNotifierProvider = StateNotifierProvider<UserNotifier, User>((ref) {
+  return UserNotifier(User(
+    email: '',
+    username: '',
+    password: '',
+    createdAt: '',
+    updatedAt: ''
+  ));
+},);

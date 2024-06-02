@@ -1,8 +1,9 @@
-import 'dart:developer';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_app/constants.dart';
+import 'package:todo_app/ui/login_page/login_states.dart';
 
-class TextInput extends StatefulWidget {
+class TextInput extends ConsumerStatefulWidget {
   const TextInput({
     super.key,
     required this.text,
@@ -12,7 +13,7 @@ class TextInput extends StatefulWidget {
     required this.error,
     required this.removeError,
     required this.isType,
-    required this.maxLength
+    required this.maxLength,
   });
 
   final String text;
@@ -25,22 +26,17 @@ class TextInput extends StatefulWidget {
   final int maxLength;
 
   @override
-  State<TextInput> createState() => _TextInputState();
+  ConsumerState<TextInput> createState() => _TextInputState();
 }
 
-class _TextInputState extends State<TextInput> {
+class _TextInputState extends ConsumerState<TextInput> {
   AppThemeSettings appTheme = AppThemeSettings();
-
-  bool _passwordIsVisible = false;
-
-  void _changePasswordVisibility() {
-    setState(() {
-      _passwordIsVisible = !_passwordIsVisible;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
+
+    final passwordIsVisible = ref.watch(showPasswordStateProvider);
+
     return Container(
       margin: const EdgeInsets.only(top: 25, left: 15, right: 15),
       padding: const EdgeInsets.only(left: 10,right: 10, top: 5, bottom: 0),
@@ -55,7 +51,7 @@ class _TextInputState extends State<TextInput> {
       child:TextFormField(
         obscureText: (widget.isType == "password" ||
             widget.isType == "confirm-password") &&
-            !_passwordIsVisible
+            !passwordIsVisible
             ? true
             : false,
         maxLines: widget.isType == "description" ? null : 1,
@@ -63,12 +59,6 @@ class _TextInputState extends State<TextInput> {
             ? AutovalidateMode.disabled
             : AutovalidateMode.onUserInteraction,
         maxLength: widget.maxLength,
-        validator: (value) {
-          if (value == null || value.trim().isEmpty) {
-            return 'Please enter some text';
-          }
-          return null;
-        },
         onTapOutside: (event) {
           FocusScopeNode focusNode = FocusScope.of(context);
           if (!focusNode.hasPrimaryFocus) {
@@ -77,15 +67,14 @@ class _TextInputState extends State<TextInput> {
         },
         controller: widget.controller,
         onChanged: (value) {
-          widget.removeError();
+          if(widget.error != null)widget.removeError();
         },
         decoration: InputDecoration(
             icon: Icon(widget.icon),
             iconColor: appTheme.getPrimaryColor,
             contentPadding: const EdgeInsets.only(top: 2,),
             labelText: widget.text,
-            labelStyle: const TextStyle(
-                color: Color.fromRGBO(0, 0, 0, 0.7), fontSize: 18),
+            labelStyle: const TextStyle(color: Color.fromRGBO(0, 0, 0, 0.7), fontSize: 18),
             enabledBorder: InputBorder.none,
             focusedBorder: InputBorder.none,
             errorText: widget.error,
@@ -97,8 +86,8 @@ class _TextInputState extends State<TextInput> {
             ),
             suffixIcon: widget.isType == "password"
                 ? IconButton(
-                onPressed: _changePasswordVisibility,
-                icon: _passwordIsVisible
+                onPressed: () => ref.read(showPasswordStateProvider.notifier).state = !passwordIsVisible,
+                icon: passwordIsVisible
                     ? const Icon(Icons.visibility)
                     : const Icon(Icons.visibility_off))
                 : 0.height,
