@@ -1,29 +1,30 @@
+import 'dart:developer';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:todo_app/constants.dart';
+import 'package:todo_app/db/db_task_controller.dart';
 import 'package:todo_app/models/task.dart';
 import 'package:todo_app/ui/common_widgets/snack_bar.dart';
-import 'package:todo_app/ui/edit_page/edit_page.dart';
 
-class HomePageTasks extends StatefulWidget {
+class HomePageTasks extends ConsumerStatefulWidget {
   const HomePageTasks(
       {super.key,
-      required this.tasksList,
       required this.deleteTask,
       required this.navigateToAddPage,
       required this.navigateToEditPage
       });
 
-  final List<Task> tasksList;
   final Function(Task) deleteTask;
   final Function() navigateToAddPage;
   final Function(Task) navigateToEditPage;
 
   @override
-  State<HomePageTasks> createState() => _HomePageTasksState();
+  ConsumerState<HomePageTasks> createState() => _HomePageTasksState();
 }
 
-class _HomePageTasksState extends State<HomePageTasks> {
+class _HomePageTasksState extends ConsumerState<HomePageTasks> {
+
   String _getFormattedDate(String inputDate) {
     String timeResult = DateFormat('jm').format(DateTime.parse(inputDate));
     String formattedDate = DateFormat.yMMMd('en_US').format(DateTime.parse(inputDate));
@@ -65,14 +66,29 @@ class _HomePageTasksState extends State<HomePageTasks> {
     return response!;
   }
 
+  _deleteTask(Task taskToBeDeleted) async {
+    final tasksListNotifier = ref.read(taskListStateNotifierProvider.notifier);
+    final taskController = ref.read(taskProvider);
+    final response = await taskController.deleteTask(taskToBeDeleted.getId);
+    if(response['status'] == 'success'){
+      tasksListNotifier.removeFromList(taskToBeDeleted);
+      ScaffoldMessenger.of(context).showSnackBar(getCustomSnackBar('Item Deleted Successfully'));
+    }else if(response['status'] == 'error'){
+      ScaffoldMessenger.of(context).showSnackBar(getCustomSnackBar('Error Occurred while Deleting Note'));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     double width = ScreenSize.getWidth(context);
     double height = ScreenSize.getHeight(context);
 
-    return Expanded(
-      child: widget.tasksList.isEmpty
-          ? GestureDetector(
+    return Consumer(
+        builder: (context, ref, child) {
+          final tasksList = ref.watch(taskListStateNotifierProvider);
+          return Expanded(
+            child: tasksList.isEmpty
+                ? GestureDetector(
               onTap: () async {
                 await widget.navigateToAddPage();
               },
@@ -80,10 +96,10 @@ class _HomePageTasksState extends State<HomePageTasks> {
                 child: Text('Click here to add a new note', style: TextStyle(color: Colors.black, fontSize: 20),),
               ),
             )
-          : ListView.builder(
-              itemCount: widget.tasksList.length,
+                : ListView.builder(
+              itemCount: tasksList.length,
               itemBuilder: (context, index) {
-                Task task = widget.tasksList[index];
+                Task task = tasksList[index];
                 return Dismissible(
                   direction: DismissDirection.endToStart,
                   confirmDismiss: (direction) async {
@@ -93,7 +109,7 @@ class _HomePageTasksState extends State<HomePageTasks> {
                     }
                   },
                   onDismissed: (direction) async {
-                    widget.deleteTask(task);
+                    _deleteTask(task);
                   },
                   key: UniqueKey(),
                   child: GestureDetector(
@@ -132,7 +148,7 @@ class _HomePageTasksState extends State<HomePageTasks> {
                             onPressed: () async {
                               bool response = await _alertDialogBox();
                               if(response){
-                                widget.deleteTask(task);
+                                _deleteTask(task);
                               }
                             },
                             icon: const Icon(Icons.delete),
@@ -145,6 +161,8 @@ class _HomePageTasksState extends State<HomePageTasks> {
                 );
               },
             ),
+          );
+        },
     );
   }
 }

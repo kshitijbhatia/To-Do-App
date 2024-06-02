@@ -1,7 +1,9 @@
 // ignore_for_file: sized_box_for_whitespace, avoid_unnecessary_containers
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_app/constants.dart';
+import 'package:todo_app/models/form_data.dart';
 import 'package:todo_app/ui/login_page/login_page_form.dart';
 import 'package:todo_app/ui/register_page/register_page.dart';
 
@@ -13,6 +15,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passController = TextEditingController();
 
@@ -22,22 +25,6 @@ class _LoginPageState extends State<LoginPage> {
     _emailController.dispose();
     _passController.dispose();
   }
-
-  void _navigateToRegisterPage() {
-    setState(() {
-      formKey.currentState?.reset();
-      _emailController.clear();
-      _passController.clear();
-    });
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const RegisterPageHome(),
-      ),
-    );
-  }
-
-  final formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -68,8 +55,14 @@ class _LoginPageState extends State<LoginPage> {
                     formKey: formKey,
                   ),
                   30.height,
-                  _LoginToRegisterButton(
-                    navigateToRegisterPage: _navigateToRegisterPage,
+                  Consumer(
+                    builder: (context, ref, child) => _LoginToRegisterButton(
+                      navigateToRegisterPage: (){
+                        ref.read(emailStateNotifierProvider.notifier).updateError(null);
+                        ref.read(passwordStateNotifierProvider.notifier).updateError(null);
+                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const RegisterPageHome(),),);
+                      }
+                    ),
                   )
                 ],
               ),
